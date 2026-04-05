@@ -1,6 +1,17 @@
 
 import os
 
+# Platform detection
+var platformDefine = "-DKORE_LINUX"
+var libs = @["-lasound", "-ldl", "-ludev", "-lGL", "-lEGL", "-lX11"]
+
+when defined(windows):
+  platformDefine = "-DKORE_WINDOWS"
+  libs = @["-lopengl32", "-lgdi32", "-lwinmm", "-lws2_32"]
+elif defined(macosx):
+  platformDefine = "-DKORE_MACOS"
+  libs = @["-framework Cocoa", "-framework OpenGL", "-framework IOKit", "-framework CoreAudio"]
+
 --passC: "-Iincludes"
 --passC: "-Ibackends/system/linux/includes"
 --passC: "-Ibackends/system/posix/includes"
@@ -9,7 +20,7 @@ import os
 --passC: "-Isources/libs/lz4"
 --passC: "-I."
 
---passC: "-DKORE_LINUX"
+switch("passC", platformDefine)
 --passC: "-DKORE_POSIX"
 --passC: "-DKORE_OPENGL"
 --passC: "-DKORE_EGL"
@@ -19,13 +30,10 @@ import os
 --passC: "-DGLEW_STATIC"
 --passC: "-DKORE_NO_MAIN"
 
---passL: "-lasound"
---passL: "-ldl"
---passL: "-ludev"
---passL: "-lGL"
---passL: "-lEGL"
+for lib in libs:
+  switch("passL", lib)
 
-# Compile Kore source files
+# Compile Kore source files (Unit Build style)
 let sources = [
   "sources/root/rootunit.c",
   "sources/gpu/gpuunit.c",
